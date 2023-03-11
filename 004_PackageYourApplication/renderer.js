@@ -7,3 +7,4 @@ const ipcConnect=async()=>{
   console.log(res);// 'pong
 }
 ipcConnect();
+console.log(window.myAPI)

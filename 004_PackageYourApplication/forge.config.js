@@ -1,5 +1,10 @@
+const path=require("path")
+
 module.exports = {
   packagerConfig: {
+    name: "GithubDesktop",// 自定义应用名称
+    icon: path.join(__dirname,"./assets/GITHUB_.ico"),// 自定义应用icon,需要为ico格式
+    asar: true,
     osxSign: {},
     //...
     osxNotarize: {
