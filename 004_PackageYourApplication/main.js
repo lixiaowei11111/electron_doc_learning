@@ -12,7 +12,10 @@ const createWindow = () => {
     // webPreference 传入 路径
   }); // 创建一个 BrowserWindow窗口 实例
 
-  win.loadFile("index.html");
+  // win.loadFile("index.html");
+  win.loadURL("https://github.com");
+  const contents = win.webContents;
+  console.log(contents, "webContents");
   ipcMain.handle("ping", () => "pong");
 };
 console.log(process.platform, "process.platform"); // win32
