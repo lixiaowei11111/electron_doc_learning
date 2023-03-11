@@ -9,7 +9,7 @@
 
 ## 2. electron由于网络原因安装失败
 
-+ 更改镜像地址
++ 更改一个包的镜像地址
 
   ```bash
   npm config set ELECTRON_MIRROR http://npm.taobao.org/mirrors/electron/
@@ -178,3 +178,52 @@ The goal of this small change is to encourage new users to use whenReady():
 + 为了实现这一特性，可以监听模组的 [`activate`](https://www.electronjs.org/zh/docs/latest/api/app#event-activate-macos) 事件，如果没有任何活动的 BrowserWindow，调用 `createWindow()` 方法新建一个。
 
 + 因为窗口无法在 `ready` 事件前创建，你应当在你的应用初始化后仅监听 `activate` 事件。 要实现这个，仅监听 `whenReady()` 回调即可。
+
+## 9. 使用vscode调试
+
++ 如果希望使用 VS Code 调试程序，需要让 VS Code 监听主进程 (main process) 和渲染器进程 (renderer process) 。 下面提供了一个简单的配置文件。 请在根目录新建一个 `.vscode` 文件夹，然后在其中新建一个 launch.json 配置文件并填写如下内容。
+
+  `.vscode/launch.json`
+
+  ```json
+  {
+    "version": "0.2.0",
+    "compounds": [
+      {
+        "name": "Main + renderer",
+        "configurations": ["Main", "Renderer"],
+        "stopAll": true
+      }
+    ],
+    "configurations": [
+      {
+        "name": "Renderer",
+        "port": 9222,
+        "request": "attach",
+        "type": "chrome",
+        "webRoot": "${workspaceFolder}"
+      },
+      {
+        "name": "Main",
+        "type": "node",
+        "request": "launch",
+        "cwd": "${workspaceFolder}",
+        "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+        "windows": {
+          "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
+        },
+        "args": [".", "--remote-debugging-port=9222"],
+        "outputCapture": "std",
+        "console": "integratedTerminal"
+      }
+    ]
+  }
+  ```
+
+  + 保存后，当选择侧边栏的 “运行和调试”，将会出现一个 "Main + renderer" 选项。然后便可设置断点，并跟踪主进程和渲染器进程中的所有变量。
+
+  上文中我们在 `launch.json` 所做的其实是创建三个配置项：
+
+  - `Main` 用来运行主程序，并且暴露出 9222 端口用于远程调试 (`--remote-debugging-port=9222`) 。 我们将把调试器绑定到那个端口来调试 `renderer` 。 因为主进程是 Node.js 进程，类型被设置为 `node`。
+  - `Renderer` 用来调试渲染器进程。 因为后者是由主进程创建的，我们要把它 “绑定” 到主进程上 ()`"request": "attach"`，而不是创建一个新的。 渲染器是 web 进程，因此要选择 `chrome` 调试器。
+  - `Main + renderer` 是一个 [复合任务](https://code.visualstudio.com/Docs/editor/tasks#_compound-tasks)，可同时执行前两个任务。
